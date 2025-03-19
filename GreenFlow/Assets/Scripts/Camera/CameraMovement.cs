@@ -5,15 +5,8 @@ public class CameraMovement : MonoBehaviour
     [SerializeField]
     private Camera cam;
     [SerializeField]
-    private int moveSpeedMultiplier = 1;
-    [SerializeField]
-    private float zoomStep = 1, minCameraSize = 1, maxCameraSize = 10;
+    private int moveSpeedMultiplier = 1, zoomStep = 5, minCameraSize = 10, maxCameraSize = 100;
     private Vector3 dragOrigin;
-
-    void Start()
-    {
-        
-    }
 
     private void Update()
     {

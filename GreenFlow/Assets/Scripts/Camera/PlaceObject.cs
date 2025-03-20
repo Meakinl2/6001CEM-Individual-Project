@@ -10,6 +10,17 @@ public class PlaceObject : MonoBehaviour
     private void Update()
     {
         // Placing down new objects and selecting already placed objects
+        CheckLeftClick();
+
+        // Creating and removing connections bewteen nodes, connections are one directional
+        CheckRightClick();
+
+        // Selecting objects so that nodes can be connected or deleted
+        CheckMiddleClick();
+        
+    }
+
+    private void CheckLeftClick() {
         if (Input.GetMouseButtonDown(0))
         {
             GameObject selectedObject = GetTopObject();
@@ -35,9 +46,10 @@ public class PlaceObject : MonoBehaviour
             Debug.Log($"Instantiated Object with ID: {newNode.id}");
             UpdateSelectedNode(newNode);
         }
+    }
 
-        // Creating and removing connections bewteen nodes, connections are one directional
-        else if (Input.GetMouseButtonDown(1))
+    private void CheckRightClick() {
+        if (Input.GetMouseButtonDown(1))
         {
             GameObject selectedObject = GetTopObject();
             if (selectedObject == null || selectedObject.GetComponent<Node>() == null || currentSeletedNode == null) {return;}
@@ -60,16 +72,16 @@ public class PlaceObject : MonoBehaviour
             }
             
         }
+    }
 
-        // Selecting objects so that nodes can be connected or deleted
-        else if (Input.GetMouseButtonDown(2))
+    private void CheckMiddleClick() {
+        if (Input.GetMouseButtonDown(2))
         {
             GameObject selectedObject = GetTopObject();
             if (selectedObject == null || selectedObject.GetComponent<Node>() == null) {return;}
 
             
         }
-        
     }
 
     // Gets the topmost object at the mouse position

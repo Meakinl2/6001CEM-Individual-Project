@@ -273,9 +273,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 519420031}
   moveSpeedMultiplier: 1
-  zoomStep: 1
-  minCameraSize: 1
-  maxCameraSize: 10
+  zoomStep: 5
+  minCameraSize: 25
+  maxCameraSize: 1000
 --- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0

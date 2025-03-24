@@ -7,44 +7,35 @@ using System.Collections.Generic;
 
 public class Node : MonoBehaviour
 {
-    public string id {get; private set;}
-    public List<string> connectedNodeIDs = new List<string>();
+    public string id { get; private set; }
+    public HashSet<string> connectedNodeIDs = new HashSet<string>();
 
-    private void Awake() 
+    private void Awake()
     {
         id = Guid.NewGuid().ToString();
         NodeManager.Instance.RegisterNode(this);
-    } 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    private void Start()
-    {
     }
 
-    // Update is called once per frame
-    private void Update()
+    // Method for adding a node connection.
+    public void AddConnectedNode(string nodeID)
     {
-        
-    }
-
-    public void AddConnectedNode(string nodeID) 
-    {
-        if (connectedNodeIDs.Contains(nodeID)) {return;}
+        if (connectedNodeIDs.Contains(nodeID)) { return; }
         Debug.Log($"Creating connection bewteen Node: {nodeID} and Node: {this.id}");
         connectedNodeIDs.Add(nodeID);
     }
 
+    // Method for removing a node connection.
     public void RemoveConnectedNode(string nodeID)
     {
-        if (!connectedNodeIDs.Contains(nodeID)) {return;}
+        if (!connectedNodeIDs.Contains(nodeID)) { return; }
         Debug.Log($"Removing connection bewteen Node: {nodeID} and Node: {this.id}");
         connectedNodeIDs.Remove(nodeID);
     }
 
-    public void UpdateColour(Color newColour) 
+    public void UpdateColour(Color newColour)
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer == null) {return;}
+        if (spriteRenderer == null) { return; }
 
         spriteRenderer.color = newColour;
     }

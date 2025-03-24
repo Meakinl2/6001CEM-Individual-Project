@@ -7,6 +7,13 @@ public class PlaceObject : MonoBehaviour
     public GameObject placeable;
     private Node currentSeletedNode; 
 
+    private NodeManager nodeManager;
+    
+    private void Awake()
+    {
+        nodeManager = GetComponent<NodeManager>();
+    }
+
     private void Update()
     {
         // Placing down new objects and selecting already placed objects
@@ -38,10 +45,7 @@ public class PlaceObject : MonoBehaviour
             GameObject newObject = Instantiate(placeable , mousePosition, Quaternion.identity);
             Node newNode = newObject.GetComponent<Node>();
             
-            if (currentSeletedNode != null) {
-                newNode.AddConnectedNode(currentSeletedNode.id);
-                currentSeletedNode.AddConnectedNode(newNode.id);
-            }
+            if (currentSeletedNode != null) {nodeManager.AddNodeConnection(currentSeletedNode, newNode);}
                 
             Debug.Log($"Instantiated Object with ID: {newNode.id}");
             UpdateSelectedNode(newNode);
@@ -60,14 +64,11 @@ public class PlaceObject : MonoBehaviour
 
             if (currentSeletedNode.connectedNodeIDs.Contains(clickedNode.id) || clickedNode.connectedNodeIDs.Contains(currentSeletedNode.id)) 
             {
-                clickedNode.RemoveConnectedNode(currentSeletedNode.id);
-                currentSeletedNode.RemoveConnectedNode(clickedNode.id);
-                Color colour = new Color(255,255,255,1);
-                clickedNode.UpdateColour(colour);
+                nodeManager.RemoveNodeConnection(currentSeletedNode, clickedNode);
+                clickedNode.UpdateColour(new Color(255,255,255,1));
                 UpdateSelectedNode(currentSeletedNode);
             } else {
-                clickedNode.AddConnectedNode(currentSeletedNode.id);
-                currentSeletedNode.AddConnectedNode(clickedNode.id);
+                nodeManager.AddNodeConnection(currentSeletedNode, clickedNode);
                 UpdateSelectedNode(currentSeletedNode);
             }
             
@@ -104,25 +105,20 @@ public class PlaceObject : MonoBehaviour
 
         if (currentSeletedNode != null) 
         {
-            colour = new Color(255,255,255,1);
-            currentSeletedNode.UpdateColour(colour);
+            currentSeletedNode.UpdateColour(new Color(255,255,255,1));
             
             foreach (string id in currentSeletedNode.connectedNodeIDs) 
             {
-            Debug.Log("Ok");
             Node connectedNode = NodeManager.Instance.GetNodeByID(id);
-            connectedNode.UpdateColour(colour);
+            connectedNode.UpdateColour(new Color(255,255,255,1));
             }
         }
-        
-        
-        colour = new Color(0,0,0,1);
-        node.UpdateColour(colour);
+
+        node.UpdateColour(new Color(0,0,0,1));
 
         colour = new Color(0,0,255,1);
         foreach (string id in node.connectedNodeIDs) 
         {
-            Debug.Log("Ok");
             Node connectedNode = NodeManager.Instance.GetNodeByID(id);
             connectedNode.UpdateColour(colour);
         }

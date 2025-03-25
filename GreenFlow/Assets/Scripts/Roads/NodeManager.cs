@@ -1,12 +1,14 @@
-using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 public class NodeManager : MonoBehaviour
 {
     public static NodeManager Instance { get; private set; }
     // A dictionary that contains all Node objects by their GUID
     private Dictionary<string, Node> nodeRegistry;
+    // A dictionary that contrains all BezierControls by GUID
+    private Dictionary<string, BezierControl> bezierControlRegistry;
 
     // A dictionary that shows all of the connections by Node id
     private Dictionary<string, HashSet<string>> nodeConnections;
@@ -15,11 +17,11 @@ public class NodeManager : MonoBehaviour
     private HashSetComparer<string> hashsetComparer;
     
     // A dictionary that contains all the bezier control points, requires a hashset comparison object to allow the keys to be in any order.
-    private Dictionary<HashSet<string>, BezierControl> connectionBeziers;
+    private Dictionary<HashSet<string>, string> connectionBeziers;
+    
+    public GameObject bezierControlObject;
 
-    public GameObject bezierControl;
-
-
+    // Runs on creation to setup necessary factors
     private void Awake()
     {
         // To prevent duplicate Object Managers
@@ -29,28 +31,75 @@ public class NodeManager : MonoBehaviour
             Destroy(gameObject);
 
         nodeRegistry = new Dictionary<string, Node>();
+        bezierControlRegistry = new Dictionary<string, BezierControl>();
         hashsetComparer = new HashSetComparer<string>();
         nodeConnections = new Dictionary<string, HashSet<string>>();
-        connectionBeziers = new Dictionary<HashSet<string>, BezierControl>(hashsetComparer);
+        connectionBeziers = new Dictionary<HashSet<string>, string>(hashsetComparer);
     }
 
+    // Adding a Node to the nodeRegistry
     public void RegisterNode(Node node)
     {
-        if (!nodeRegistry.ContainsKey(node.id))
-        {
-            nodeRegistry.Add(node.id, node);
-        }
+        Debug.Log("Attempting to Register Node: " + node.id);
+        if (!nodeRegistry.ContainsKey(node.id)) {nodeRegistry.Add(node.id, node);}
+        Debug.Log("Successfully Registered Node: " + node.id);
     }
 
+    // Adding a BezierControl to the bezierControlRegsitry
+    public void RegisterBezierControl(BezierControl bezierControl)
+    {
+        Debug.Log("Attempting to BezierControl: " + bezierControl.id);
+        if (!bezierControlRegistry.ContainsKey(bezierControl.id)) {bezierControlRegistry.Add(bezierControl.id, bezierControl);}
+        Debug.Log("Successfully to BezierControl: " + bezierControl.id);
+    }
+
+    // Remove Node from the nodeRegistry and also remove all connection entries
+    public void DeregisterNode(string nodeId)
+    {
+        Debug.Log("Attempting to Deregister Node: " + nodeId);
+        
+        if (!nodeConnections.ContainsKey(nodeId)) {return;}
+
+        // Copy required as the foreach loop edits the original hashset which causes the iteration to throw an error
+        HashSet<string> connectionsHashSetCopy = new HashSet<string>(nodeConnections[nodeId]);
+        Node node1 = GetNodeByID(nodeId);
+        foreach (string node2Id in connectionsHashSetCopy) {
+            Debug.Log("Trying to Remove Connection bewtween: " + nodeId + " And " + node2Id);
+            Node node2 = GetNodeByID(node2Id);
+            Debug.Log("Trying to Remove Connection bewtween2: " + node1 + " And " + node2);
+            RemoveNodeConnection(node1, node2);
+        }
+
+        if (nodeRegistry.ContainsKey(nodeId)) {nodeRegistry.Remove(nodeId);}
+
+        Debug.Log("Successfully Deregistered Node: " + nodeId);
+    }
+
+    // Remove BezierControl from the bezierControlRegistry
+    public void DeregisterBezierControl(string bezierControlID)
+    {
+        Debug.Log("Attempting to Deregister BezierControl: " + bezierControlID);
+        if (bezierControlRegistry.ContainsKey(bezierControlID)) {bezierControlRegistry.Remove(bezierControlID);}
+        Debug.Log("Successfully Deregistered BezierControl: " + bezierControlID);
+    }
+
+    // Consult nodeRegsitry with Node ID and return Node if exists.
     public Node GetNodeByID(string id)
     {
         return nodeRegistry.TryGetValue(id, out Node node) ? node : null;
     } 
 
+    // Consult bezierControlRegsitry with BezierControl ID and return BezierControl if exists.
+    public BezierControl GetBezierControlByID(string id)
+    {
+        return bezierControlRegistry.TryGetValue(id, out BezierControl bezierControl) ? bezierControl : null;
+    }
 
-    // Create a new connection between two nodes.
+    // Create a new connection between two nodes, including intialising the BezierControl between them.
     public void AddNodeConnection(Node node1, Node node2)
     {
+        Debug.Log("Attempting to add Connection between Node: " + node1.id + " and Node: " + node2.id);
+
         HashSet<string> dictKey = new HashSet<string> {node1.id, node2.id};
         
         // Add Nodes to nodeConnections Dictionary if they aren't already there.
@@ -68,21 +117,37 @@ public class NodeManager : MonoBehaviour
         if (connectionBeziers.ContainsKey(dictKey)) {return;}
 
         Vector2 bezierPosition = Vector2.Lerp(node1.transform.position, node2.transform.position, 0.5f);
-        GameObject newBezierControl = Instantiate(bezierControl, bezierPosition, Quaternion.identity);
+        GameObject newBezierControlObject = Instantiate(bezierControlObject, bezierPosition, Quaternion.identity);
+        BezierControl newBezierControl = newBezierControlObject.GetComponent<BezierControl>();
+        connectionBeziers.Add(dictKey, newBezierControl.id);
+        newBezierControl.setParentNodes(node1.id, node2.id);
+
+        Debug.Log("Succesffuly added Connection between Node: " + node1.id + " and Node: " + node2.id);
  
     }
 
-    // Remove an exisiting connection between two nodes.
+    // Remove an exisiting connection between two nodes, including deleting the BezierControl bewteen them
     public void RemoveNodeConnection(Node node1, Node node2)
     {
-        HashSet<string> dictKey = new HashSet<string> {node1.id, node2.id};
-       
+        Debug.Log("Attempting to remove Connection between Node: " + node1.id + " and Node: " + node2.id);
+
+        HashSet<string> dictKey = new HashSet<string>() {node1.id, node2.id};
+        
         if (nodeConnections[node1.id].Contains(node2.id)) {nodeConnections[node1.id].Remove(node2.id);}
         if (nodeConnections[node2.id].Contains(node1.id)) {nodeConnections[node2.id].Remove(node1.id);}
-
+        
         if (node1.connectedNodeIDs.Contains(node2.id)) {node1.connectedNodeIDs.Remove(node2.id);}
         if (node2.connectedNodeIDs.Contains(node1.id)) {node2.connectedNodeIDs.Remove(node1.id);}
-
+        
+        if (!connectionBeziers.ContainsKey(dictKey)) {return;}
+        
+        // Destroy the BezierControl that sits between the two nodes.
+        BezierControl connectionBezier = GetBezierControlByID(connectionBeziers[dictKey]);
+        connectionBeziers.Remove(dictKey);
+        DeregisterBezierControl(connectionBezier.id);
+        Destroy(connectionBezier.gameObject);
+        
+        Debug.Log("Successfully removed Connection between Node: " + node1.id + " and Node: " + node2.id);
     }
 
 }

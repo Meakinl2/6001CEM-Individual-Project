@@ -1,16 +1,22 @@
 using UnityEngine;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 public class BezierControl : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    public string id { get; private set; }
+    private HashSet<string> parentNodes = new HashSet<string>();
+
+    private void Awake()
     {
-        
+        id = Guid.NewGuid().ToString();
+        NodeManager.Instance.RegisterBezierControl(this);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    public void setParentNodes(string parent1ID, string parent2ID) {
+        parentNodes.Add(parent1ID);
+        parentNodes.Add(parent2ID);
     }
 }

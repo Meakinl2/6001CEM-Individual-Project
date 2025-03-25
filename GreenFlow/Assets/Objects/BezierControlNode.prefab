@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -7502276701742980729}
   - component: {fileID: 6852790483933183025}
   m_Layer: 0
-  m_Name: ControlNode
+  m_Name: BezierControlNode
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

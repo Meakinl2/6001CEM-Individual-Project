@@ -79,8 +79,16 @@ public class PlaceObject : MonoBehaviour
         if (Input.GetMouseButtonDown(2))
         {
             GameObject selectedObject = GetTopObject();
-            if (selectedObject == null || selectedObject.GetComponent<Node>() == null) {return;}
+            if (selectedObject == null) {return;}
 
+            if (selectedObject.GetComponent<Node>() != null) {
+
+                Node clickedNode = selectedObject.GetComponent<Node>();
+
+                if (clickedNode == currentSeletedNode) {currentSeletedNode = null;}
+                nodeManager.DeregisterNode(clickedNode.id);
+                Destroy(clickedNode.gameObject);
+            }
             
         }
     }
@@ -101,7 +109,7 @@ public class PlaceObject : MonoBehaviour
     }
 
     private void UpdateSelectedNode(Node node) {
-        Color colour;
+        Debug.Log("Attempting to Update SelectedNode to Node " + node.id);
 
         if (currentSeletedNode != null) 
         {
@@ -116,14 +124,16 @@ public class PlaceObject : MonoBehaviour
 
         node.UpdateColour(new Color(0,0,0,1));
 
-        colour = new Color(0,0,255,1);
         foreach (string id in node.connectedNodeIDs) 
         {
+            Debug.Log("UpdateSelectedNodeNode Connected Node: " + id);
             Node connectedNode = NodeManager.Instance.GetNodeByID(id);
-            connectedNode.UpdateColour(colour);
+            connectedNode.UpdateColour(new Color(0,0,255,1));
         }
 
         currentSeletedNode = node;
+
+        Debug.Log("Successfully Updated SelectedNode to Node " + node.id);
     }
 }
 

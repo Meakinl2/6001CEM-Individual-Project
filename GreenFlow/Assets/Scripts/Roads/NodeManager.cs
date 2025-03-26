@@ -17,7 +17,7 @@ public class NodeManager : MonoBehaviour
     private HashSetComparer<string> hashsetComparer;
     
     // A dictionary that contains all the bezier control points, requires a hashset comparison object to allow the keys to be in any order.
-    private Dictionary<HashSet<string>, string> connectionBeziers;
+    private Dictionary<HashSet<string>, string> controlBezierConnections;
     
     public GameObject bezierControlObject;
 
@@ -34,7 +34,7 @@ public class NodeManager : MonoBehaviour
         bezierControlRegistry = new Dictionary<string, BezierControl>();
         hashsetComparer = new HashSetComparer<string>();
         nodeConnections = new Dictionary<string, HashSet<string>>();
-        connectionBeziers = new Dictionary<HashSet<string>, string>(hashsetComparer);
+        controlBezierConnections = new Dictionary<HashSet<string>, string>(hashsetComparer);
     }
 
     // Adding a Node to the nodeRegistry
@@ -95,6 +95,14 @@ public class NodeManager : MonoBehaviour
         return bezierControlRegistry.TryGetValue(id, out BezierControl bezierControl) ? bezierControl : null;
     }
 
+    // Consults controlBezierConnections with two NodeIds and returns ControlBezier object between them.
+    public BezierControl GetBezierControlByParentIDs(string parent1Id, string parent2Id) 
+    {
+        HashSet<string> dictKey = new HashSet<string>() {parent1Id, parent2Id};
+        string controlBezierId = controlBezierConnections.TryGetValue(dictKey, out string valueOutput) ? valueOutput : null;
+        return GetBezierControlByID(controlBezierId);
+    }
+
     // Create a new connection between two nodes, including intialising the BezierControl between them.
     public void AddNodeConnection(Node node1, Node node2)
     {
@@ -114,13 +122,14 @@ public class NodeManager : MonoBehaviour
         if (!node1.connectedNodeIDs.Contains(node2.id)) {node1.connectedNodeIDs.Add(node2.id);}
         if (!node2.connectedNodeIDs.Contains(node1.id)) {node2.connectedNodeIDs.Add(node1.id);}
 
-        if (connectionBeziers.ContainsKey(dictKey)) {return;}
+        if (controlBezierConnections.ContainsKey(dictKey)) {return;}
 
         Vector2 bezierPosition = Vector2.Lerp(node1.transform.position, node2.transform.position, 0.5f);
         GameObject newBezierControlObject = Instantiate(bezierControlObject, bezierPosition, Quaternion.identity);
         BezierControl newBezierControl = newBezierControlObject.GetComponent<BezierControl>();
-        connectionBeziers.Add(dictKey, newBezierControl.id);
-        newBezierControl.setParentNodes(node1.id, node2.id);
+        controlBezierConnections.Add(dictKey, newBezierControl.id);
+        newBezierControl.SetParentNodes(node1, node2);
+        newBezierControl.UpdateSubNodes();
 
         Debug.Log("Succesffuly added Connection between Node: " + node1.id + " and Node: " + node2.id);
  
@@ -139,11 +148,13 @@ public class NodeManager : MonoBehaviour
         if (node1.connectedNodeIDs.Contains(node2.id)) {node1.connectedNodeIDs.Remove(node2.id);}
         if (node2.connectedNodeIDs.Contains(node1.id)) {node2.connectedNodeIDs.Remove(node1.id);}
         
-        if (!connectionBeziers.ContainsKey(dictKey)) {return;}
+        if (!controlBezierConnections.ContainsKey(dictKey)) {return;}
         
         // Destroy the BezierControl that sits between the two nodes.
-        BezierControl connectionBezier = GetBezierControlByID(connectionBeziers[dictKey]);
-        connectionBeziers.Remove(dictKey);
+        BezierControl connectionBezier = GetBezierControlByID(controlBezierConnections[dictKey]);
+        connectionBezier.DestroySubnodes();
+
+        controlBezierConnections.Remove(dictKey);
         DeregisterBezierControl(connectionBezier.id);
         Destroy(connectionBezier.gameObject);
         

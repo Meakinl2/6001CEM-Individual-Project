@@ -32,11 +32,47 @@ public class Node : MonoBehaviour
         connectedNodeIDs.Remove(nodeID);
     }
 
+
     public void UpdateColour(Color newColour)
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) { return; }
 
         spriteRenderer.color = newColour;
+    }
+
+
+    public void UpdateColourUnselected() 
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) { return; }
+
+        spriteRenderer.color = new Color(255,255,255,1);
+    }
+
+
+    public void UpdateColourSelected() 
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) { return; }
+
+        spriteRenderer.color = new Color(0,0,0,1);
+    }
+
+    public void UpdateColourConnected() 
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) { return; }
+
+        spriteRenderer.color = new Color(0,0,255,1);
+    }
+
+    public void UpdateColourInvisible()
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) { return; }
+
+        spriteRenderer.color = new Color(0,0,0,0);
+
     }
 }

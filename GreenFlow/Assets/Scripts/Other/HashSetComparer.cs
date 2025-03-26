@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#nullable enable
 class HashSetComparer<T> : IEqualityComparer<HashSet<T>>
 {
     public bool Equals(HashSet<T>? x, HashSet<T>? y)

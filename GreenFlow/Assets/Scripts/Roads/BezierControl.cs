@@ -15,12 +15,23 @@ public class BezierControl : MonoBehaviour
     public GameObject subNodeObject;
     public List<GameObject> subNodes = new List<GameObject>();
 
+    private LineRenderer lineRenderer;
+    private List<Vector3> lineRendererPoints = new List<Vector3>();
+
     public bool isVisible = false;
 
     private void Awake()
     {
         id = Guid.NewGuid().ToString();
         NodeManager.Instance.RegisterBezierControl(this);
+
+        lineRenderer = gameObject.GetComponent<LineRenderer>();
+        
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startWidth = 1f;
+        lineRenderer.endWidth = 1f;
+        lineRenderer.sortingOrder = 1;
+        lineRenderer.enabled = true;
     }
 
     // Set the Ids of the BezierControl parent nodes.
@@ -42,15 +53,21 @@ public class BezierControl : MonoBehaviour
                         + 2 * (1 - t) * t * transform.position
                         + Mathf.Pow(t, 2) * rightParent.transform.position;
 
-            GameObject subNode =  Instantiate(subNodeObject, pos, Quaternion.identity);
+            GameObject subNode = Instantiate(subNodeObject, pos, Quaternion.identity);
             subNodes.Add(subNode);
+            lineRendererPoints.Add(subNode.transform.position);
         }   
+
+        lineRendererPoints.Add(rightParent.transform.position);
+        lineRenderer.positionCount = lineRendererPoints.Count;
+        lineRenderer.SetPositions(lineRendererPoints.ToArray());
 
     }
 
     public void DestroySubnodes() 
     {
         foreach (GameObject subNode in subNodes) {  Destroy(subNode); }
+        lineRendererPoints.Clear();
     }
 
 

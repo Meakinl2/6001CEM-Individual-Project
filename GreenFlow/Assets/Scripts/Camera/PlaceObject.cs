@@ -100,7 +100,6 @@ public class PlaceObject : MonoBehaviour
 
         if (Input.GetMouseButtonDown(1))
         {
-            
             GameObject selectedObject = GetTopObject();
             if (selectedObject == null || selectedObject.GetComponent<Node>() == null || selectedNode == null) {return;}
 
@@ -116,10 +115,10 @@ public class PlaceObject : MonoBehaviour
             } else {
                 nodeManager.AddNodeConnection(selectedNode, clickedNode);
                 UpdateSelectedNode(selectedNode);
-            }
-            
+            }         
         }
     }
+
 
     private void CheckMiddleClick() 
     {
@@ -159,6 +158,7 @@ public class PlaceObject : MonoBehaviour
         return selectedObject;
     }
 
+
     private void UpdateSelectedNode(Node node) 
     {
         Debug.Log("Attempting to Update selectedNode to Node " + node.id);
@@ -192,6 +192,7 @@ public class PlaceObject : MonoBehaviour
 
         Debug.Log("Successfully Updated selectedNode to Node " + node.id);
     }
+
 
     private void UpdateSelectedBezierControl(BezierControl bezierControl)
     {

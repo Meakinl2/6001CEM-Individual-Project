@@ -7,8 +7,9 @@ public class FpsCounter : MonoBehaviour
 {
     private string filePath;
 
+    private float startTime;
     private float rawFps;
-    private float smoothedFps1,smoothedFps2,smoothedFps3,smoothedFps4,smoothedFps5;
+    private float smoothedFps1,smoothedFps2;
     
     private void Awake()
     {
@@ -19,6 +20,7 @@ public class FpsCounter : MonoBehaviour
     private IEnumerator Start()
     {
         GUI.depth = 2;
+        startTime = Time.time;
         
         while (true)
         {
@@ -26,19 +28,17 @@ public class FpsCounter : MonoBehaviour
 
             smoothedFps1 = (0.2f * rawFps) + (1f - 0.2f) * smoothedFps1;
             smoothedFps2 = (0.4f * rawFps) + (1f - 0.4f) * smoothedFps2;
-            smoothedFps3 = (0.6f * rawFps) + (1f - 0.6f) * smoothedFps3;
-            smoothedFps4 = (0.8f * rawFps) + (1f - 0.8f) * smoothedFps4;
-            smoothedFps5 = (1.0f * rawFps) + (1f - 1.0f) * smoothedFps5;
 
             yield return new WaitForSeconds(0.1f);
             
             try
             {
+                float currentTime = Time.time;     
+                float milliseconds = (currentTime - startTime) * 1000;
                 using (StreamWriter writer = new StreamWriter(filePath, true))
                 {
-                    writer.WriteLine(System.DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss") + ", " 
-                    + rawFps.ToString("F2") + ", " + smoothedFps1.ToString("F2") + ", " + smoothedFps2.ToString("F2") + ", " 
-                    + smoothedFps3.ToString("F2") + ", " + smoothedFps4.ToString("F2") + ", " + smoothedFps5.ToString("F2") + ", ");
+                    writer.WriteLine(milliseconds + ", " 
+                    + rawFps.ToString("F2") + ", " + smoothedFps1.ToString("F2") + ", " + smoothedFps2.ToString("F2"));
                 }
             }
             catch (System.Exception e)

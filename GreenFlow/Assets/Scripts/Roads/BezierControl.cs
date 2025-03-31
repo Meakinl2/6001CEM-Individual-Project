@@ -12,11 +12,9 @@ public class BezierControl : MonoBehaviour
     private Node leftParent;
     private Node rightParent;
 
-    public GameObject subNodeObject;
-    public List<GameObject> subNodes = new List<GameObject>();
-
     private LineRenderer lineRenderer;
-    private List<Vector3> lineRendererPoints = new List<Vector3>();
+    
+    private List<Vector3> curvePoints = new List<Vector3>();
 
     public bool isVisible = false;
 
@@ -26,13 +24,11 @@ public class BezierControl : MonoBehaviour
         NodeManager.Instance.RegisterBezierControl(this);
 
         lineRenderer = gameObject.GetComponent<LineRenderer>();
-        
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
-        lineRenderer.startWidth = 1f;
-        lineRenderer.endWidth = 1f;
         lineRenderer.sortingOrder = 1;
         lineRenderer.enabled = true;
     }
+
 
     // Set the Ids of the BezierControl parent nodes.
     public void SetParentNodes(Node parent1, Node parent2) 
@@ -42,10 +38,11 @@ public class BezierControl : MonoBehaviour
     }
 
 
-    public void UpdateSubNodes() 
+    public void UpdateCurve() 
     {
+        if (leftParent == null || rightParent == null) return;
 
-        DestroySubnodes();
+        curvePoints.Clear();
 
         for (float t = 0; t <= 1; t += 0.05f) 
         {
@@ -53,24 +50,17 @@ public class BezierControl : MonoBehaviour
                         + 2 * (1 - t) * t * transform.position
                         + Mathf.Pow(t, 2) * rightParent.transform.position;
 
-            GameObject subNode = Instantiate(subNodeObject, pos, Quaternion.identity);
-            subNodes.Add(subNode);
-            lineRendererPoints.Add(subNode.transform.position);
+            curvePoints.Add(pos);
         }   
 
-        lineRendererPoints.Add(rightParent.transform.position);
-        lineRenderer.positionCount = lineRendererPoints.Count;
-        lineRenderer.SetPositions(lineRendererPoints.ToArray());
+        curvePoints.Add(rightParent.transform.position);
+        lineRenderer.positionCount = curvePoints.Count;
+        lineRenderer.SetPositions(curvePoints.ToArray());
 
     }
 
-    public void DestroySubnodes() 
-    {
-        foreach (GameObject subNode in subNodes) {  Destroy(subNode); }
-        lineRendererPoints.Clear();
-    }
 
-
+    // Colour for if BezierControl is visible but not selected
     public void UpdateColourUnselected() 
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
@@ -79,6 +69,7 @@ public class BezierControl : MonoBehaviour
         spriteRenderer.color = new Color32(200,200,200,120);
     }
 
+    // Colour for if BezierControl is visible and selected
     public void UpdateColourSelected() 
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
@@ -87,6 +78,7 @@ public class BezierControl : MonoBehaviour
         spriteRenderer.color = new Color32(100,100,100,120);
     }
 
+    // Colour for making BezierControl invisible
     public void UpdateColourInvisible()
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();

@@ -129,7 +129,7 @@ public class NodeManager : MonoBehaviour
         BezierControl newBezierControl = newBezierControlObject.GetComponent<BezierControl>();
         controlBezierConnections.Add(dictKey, newBezierControl.id);
         newBezierControl.SetParentNodes(node1, node2);
-        newBezierControl.UpdateSubNodes();
+        newBezierControl.UpdateCurve();
 
         Debug.Log("Succesffuly added Connection between Node: " + node1.id + " and Node: " + node2.id);
  
@@ -152,7 +152,6 @@ public class NodeManager : MonoBehaviour
         
         // Destroy the BezierControl that sits between the two nodes.
         BezierControl connectionBezier = GetBezierControlByID(controlBezierConnections[dictKey]);
-        connectionBezier.DestroySubnodes();
 
         controlBezierConnections.Remove(dictKey);
         DeregisterBezierControl(connectionBezier.id);

@@ -82,13 +82,13 @@ public class PlaceObject : MonoBehaviour
             foreach (string id in selectedNode.connectedNodeIDs) 
             {
                 BezierControl bezierControl = nodeManager.GetBezierControlByParentIDs(selectedNode.id, id);
-                bezierControl.UpdateSubNodes();
+                bezierControl.UpdateCurve();
             }
         } 
         else if (isDraggingBezierControl) 
         {
             selectedBezierControl.transform.position = mousePosition;
-            selectedBezierControl.UpdateSubNodes();
+            selectedBezierControl.UpdateCurve();
         }
     }
 

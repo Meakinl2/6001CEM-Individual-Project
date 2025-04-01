@@ -18,6 +18,8 @@ public class PlaceObject : MonoBehaviour
         nodeManager = GetComponent<NodeManager>();
     }
 
+    int counter = 0;
+
     private void Update()
     {
         // Placing down new objects and selecting already placed objects
@@ -29,7 +31,7 @@ public class PlaceObject : MonoBehaviour
 
         // Selecting objects so that nodes can be connected or deleted
         CheckMiddleClick();
-        
+        counter += 1;
     }
 
 
@@ -70,8 +72,7 @@ public class PlaceObject : MonoBehaviour
 
     private void CheckDragging() 
     {
-        if (!isDraggingNode && !isDraggingBezierControl) {return;}
-
+        if (!isDraggingNode && !isDraggingBezierControl) return;
         if (Input.GetMouseButtonUp(0)) {isDraggingNode = false; isDraggingBezierControl = false; return;}
 
         Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);

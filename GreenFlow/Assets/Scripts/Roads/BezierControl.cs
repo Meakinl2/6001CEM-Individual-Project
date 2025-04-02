@@ -16,14 +16,25 @@ public class BezierControl : MonoBehaviour
     private Node leftParent;
     private Node rightParent;
 
-    private LineRenderer lineRenderer;
+    public bool isVisible = false;
+
+    private int numLanes = 1;
+    private float laneWidth = 3.5F;
+
     
     // Unity burst isn't vector3 compatible and Native Arrays are faster than Lists.
+    private int resolution = 20;
     private NativeArray<float3> curvePoints;
-    public int resolution = 20;
+    private NativeArray<float3> normalVectors;
     private List<Vector3> curvePointsCache = new List<Vector3>();
 
-    public bool isVisible = false;
+
+    private Dictionary<int, Lane> laneRegistry = new Dictionary<int, Lane>();
+    
+    public GameObject laneObject;
+    private LineRenderer lineRenderer;
+
+    
 
     private void Awake()
     {
@@ -36,12 +47,17 @@ public class BezierControl : MonoBehaviour
         lineRenderer.enabled = true;
 
         curvePoints = new NativeArray<float3>(resolution + 1, Allocator.Persistent);
+        normalVectors = new NativeArray<float3>(resolution + 1, Allocator.Persistent);
+
+        UpdateRoadWidth();
     }
 
     private void OnDestroy()
     {
         // Ensure that the Native Array is emptied when the program closes or the object is destroyed to prevent memory leak
         if (curvePoints.IsCreated) curvePoints.Dispose();
+        if (normalVectors.IsCreated) normalVectors.Dispose();
+
     }
 
     // Set the Ids of the BezierControl parent nodes.
@@ -58,24 +74,18 @@ public class BezierControl : MonoBehaviour
         // Guard Clause for to skip unnecessary changes.
         if (newResolution == resolution) return;
 
-        
-
         resolution = newResolution;
 
         // Dispose of old array and then create the new one
-        if (curvePoints.IsCreated) 
-            curvePoints.Dispose();
+        if (curvePoints.IsCreated) curvePoints.Dispose();
+        if (normalVectors.IsCreated) normalVectors.Dispose();
 
         curvePoints = new NativeArray<float3>(resolution + 1, Allocator.Persistent);
+        normalVectors = new NativeArray<float3>(resolution + 1, Allocator.Persistent);
     }
 
-    public void UpdateCurve()
-    {
-        // Guard clause to ensure that both parents are set
-        if (leftParent == null || rightParent == null) return;
 
-        // Approximation of bezier curve length so that the number of nodes can be dynamically chosen.
-
+    private int CalculateResolution() {
         float chordLength = Vector2.Distance(leftParent.transform.position, rightParent.transform.position);
         float controlOffsetLeft = Vector2.Distance(leftParent.transform.position, (2 * transform.position - leftParent.transform.position)) / 2;
         float controlOffsetRight = Vector2.Distance(rightParent.transform.position, (2 * transform.position - rightParent.transform.position)) / 2;
@@ -85,18 +95,36 @@ public class BezierControl : MonoBehaviour
                                                 + Vector2.Distance(transform.position, rightParent.transform.position));
 
         float bezierLengthApprox = (chordLength + 2 * weight * controlOffset) / 2;
-        
 
-        SetResolution(Mathf.FloorToInt(bezierLengthApprox / 10));
-        
+        return Mathf.FloorToInt(bezierLengthApprox / 10);
+    }
 
+
+    public void UpdateRoadWidth() 
+    {
+        float width = (float)laneWidth * (float)numLanes * (float)2;
+        lineRenderer.startWidth = width;
+        lineRenderer.endWidth = width;
+    }
+
+
+    public void UpdateCurve()
+    {
+        // Guard clause to ensure that both parents are set
+        if (leftParent == null || rightParent == null) return;
+
+        // Approximation of bezier curve length so that the number of nodes can be dynamically chosen.
+        int newResolution = CalculateResolution();
+        SetResolution(newResolution);
+    
         // Schedule parallel Bezier calculations
         var job = new BezierCurveJob
         {
             leftParentPos = math.float2(leftParent.transform.position.x, leftParent.transform.position.y),
             rightParentPos = math.float2(rightParent.transform.position.x, rightParent.transform.position.y),
             controlPos = math.float2(transform.position.x, transform.position.y),
-            jobCurvePoints = curvePoints
+            curvePoints = curvePoints,
+            normalVectors = normalVectors
         };
 
         JobHandle handle = job.Schedule(curvePoints.Length, 3);
@@ -117,16 +145,55 @@ public class BezierControl : MonoBehaviour
     {
         public float2 leftParentPos, rightParentPos, controlPos;
         // Allow the native array to be accessed by the parallel function
-        [NativeDisableParallelForRestriction] public NativeArray<float3> jobCurvePoints;
+        [NativeDisableParallelForRestriction] public NativeArray<float3> curvePoints;
+        [NativeDisableParallelForRestriction] public NativeArray<float3> normalVectors;
 
         public void Execute(int i) 
         {
-            float t = i / (float)(jobCurvePoints.Length - 1);
-            float2 p = math.pow(1 - t, 2) * leftParentPos + 2 * (1 - t) * t * controlPos + math.pow(t, 2) * rightParentPos;
-            jobCurvePoints[i] = new float3(p.x, p.y, 0);
+            float t = i / (float)(curvePoints.Length - 1);
+
+            float2 point = math.pow(1 - t, 2) * leftParentPos + 2 * (1 - t) * t * controlPos + math.pow(t, 2) * rightParentPos;
+        
+            curvePoints[i] = new float3(point.x, point.y, 0);
+
+            float2 tangent = -2 * (1 - t) * leftParentPos + 2 * (1 - 2 * t) * controlPos + 2 * t * rightParentPos;
+            tangent = math.normalize(tangent);
+
+            normalVectors[i] = new float3(-tangent.y, tangent.x, 0);
         }
     }
 
+
+    // Kept Seperate so that it can be called when a curve stops being altered rather than every frame like UpdateCurve is
+    public void UpdateLanePoints() 
+    {
+        foreach (int polarity in new int[] {-1, 1}) 
+        {
+            for (int i = 1; i <= numLanes; i++) 
+            {
+                int key = i * polarity;
+                
+                Lane lane = laneRegistry.TryGetValue(key, out Lane laneQuery) ? laneQuery : null;
+                if (lane == null) 
+                {
+                    GameObject newLaneObject = Instantiate(laneObject, transform.position, Quaternion.identity);
+                    lane = newLaneObject.GetComponent<Lane>();
+                    laneRegistry.Add(key, lane);
+        
+                }
+
+                lane.lanePoints.Clear();
+
+                for (int j = 0; j <= resolution; j++)
+                {
+                    lane.lanePoints.Add(curvePoints[j] + normalVectors[j] * (laneWidth / 2) * key);
+                }
+
+                lane.UpdateLineRenderer();
+
+            }
+        }
+    }
 
 
     // Colour for if BezierControl is visible but not selected

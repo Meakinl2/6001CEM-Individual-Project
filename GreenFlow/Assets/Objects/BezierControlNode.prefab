@@ -138,9 +138,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 630d2f5e7af6a7e4c87aec7b743351a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  subNodeObject: {fileID: 5684159547093142500, guid: 11b42092b4e6c5f41a1aa6f56fc3452e, type: 3}
-  subNodes: []
   isVisible: 0
+  numLanes: 1
+  laneObject: {fileID: 7019897744156408944, guid: 1ab3da91035669c49ac462df18e0bd09, type: 3}
 --- !u!120 &-4315164969674315883
 LineRenderer:
   serializedVersion: 2

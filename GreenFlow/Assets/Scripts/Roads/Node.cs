@@ -47,7 +47,7 @@ public class Node : MonoBehaviour
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) { return; }
 
-        spriteRenderer.color = new Color(255,255,255,1);
+        spriteRenderer.color = new Color32(200,200,200,120);
     }
 
 
@@ -56,7 +56,7 @@ public class Node : MonoBehaviour
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) { return; }
 
-        spriteRenderer.color = new Color(0,0,0,1);
+        spriteRenderer.color = new Color32(100,100,100,120);
     }
 
     public void UpdateColourConnected() 
@@ -64,7 +64,7 @@ public class Node : MonoBehaviour
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) { return; }
 
-        spriteRenderer.color = new Color(0,0,255,1);
+        spriteRenderer.color = new Color32(200,0,0,120);
     }
 
     public void UpdateColourInvisible()
@@ -72,7 +72,7 @@ public class Node : MonoBehaviour
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer == null) { return; }
 
-        spriteRenderer.color = new Color(0,0,0,0);
+        spriteRenderer.color = new Color32(0,0,0,0);
 
     }
 }

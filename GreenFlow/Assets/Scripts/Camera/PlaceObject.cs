@@ -73,7 +73,25 @@ public class PlaceObject : MonoBehaviour
     private void CheckDragging() 
     {
         if (!isDraggingNode && !isDraggingBezierControl) return;
-        if (Input.GetMouseButtonUp(0)) {isDraggingNode = false; isDraggingBezierControl = false; return;}
+        if (Input.GetMouseButtonUp(0) && isDraggingNode) 
+        {
+            isDraggingNode = false; 
+
+            foreach (string id in selectedNode.connectedNodeIDs) 
+            {
+                BezierControl bezierControl = nodeManager.GetBezierControlByParentIDs(selectedNode.id, id);
+                bezierControl.UpdateLanePoints();
+            }
+
+            return;
+        }
+        else if (Input.GetMouseButtonUp(0) && isDraggingBezierControl)
+        {
+            isDraggingBezierControl = false; 
+            selectedBezierControl.UpdateLanePoints();
+            return;
+        }
+
 
         Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 

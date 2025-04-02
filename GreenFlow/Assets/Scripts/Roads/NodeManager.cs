@@ -130,6 +130,7 @@ public class NodeManager : MonoBehaviour
         controlBezierConnections.Add(dictKey, newBezierControl.id);
         newBezierControl.SetParentNodes(node1, node2);
         newBezierControl.UpdateCurve();
+        newBezierControl.UpdateLanePoints();
 
         Debug.Log("Succesffuly added Connection between Node: " + node1.id + " and Node: " + node2.id);
  

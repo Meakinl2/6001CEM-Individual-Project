@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Lane : MonoBehaviour
+public class LaneRenderer : MonoBehaviour
 {
 
     public List<Vector3> lanePoints;
@@ -14,7 +14,7 @@ public class Lane : MonoBehaviour
         lineRenderer = gameObject.GetComponent<LineRenderer>();
         lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
         lineRenderer.sortingOrder = 2;
-        lineRenderer.enabled = true;
+        lineRenderer.enabled = false;
 
         lanePoints = new List<Vector3>();
 

@@ -7,6 +7,7 @@ using Unity.Jobs;
 using Unity.Burst;
 using Unity.Mathematics;
 
+// using LineManager;
 public class BezierControl : MonoBehaviour
 {
 
@@ -27,15 +28,11 @@ public class BezierControl : MonoBehaviour
     private NativeArray<float3> curvePoints;
     private NativeArray<float3> normalVectors;
     private List<Vector3> curvePointsCache = new List<Vector3>();
-
-
-    private Dictionary<int, Lane> laneRegistry = new Dictionary<int, Lane>();
     
     public GameObject laneObject;
     private LineRenderer lineRenderer;
 
     
-
     private void Awake()
     {
         id = Guid.NewGuid().ToString();
@@ -171,26 +168,16 @@ public class BezierControl : MonoBehaviour
         {
             for (int i = 1; i <= numLanes; i++) 
             {
-                int key = i * polarity;
+                int laneIndex = i * polarity;
                 
-                Lane lane = laneRegistry.TryGetValue(key, out Lane laneQuery) ? laneQuery : null;
-                if (lane == null) 
-                {
-                    GameObject newLaneObject = Instantiate(laneObject, transform.position, Quaternion.identity);
-                    lane = newLaneObject.GetComponent<Lane>();
-                    laneRegistry.Add(key, lane);
-        
-                }
-
-                lane.lanePoints.Clear();
-
+                List<Vector3> lanePoints =  new List<Vector3>();
                 for (int j = 0; j <= resolution; j++)
                 {
-                    lane.lanePoints.Add(curvePoints[j] + normalVectors[j] * (laneWidth / 2) * key);
+                    lanePoints.Add(curvePoints[j] + normalVectors[j] * (laneWidth / 2) * laneIndex);
                 }
 
-                lane.UpdateLineRenderer();
-
+                LaneManager.Instance.TryRegisterLane(id, laneIndex);
+                LaneManager.Instance.UpdateLaneBlob(id, laneIndex, lanePoints);
             }
         }
     }

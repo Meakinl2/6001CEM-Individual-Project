@@ -62,6 +62,9 @@ public class BezierControl : MonoBehaviour
     {
         leftParent = parent1;
         rightParent = parent2;
+        UpdateCurve();
+        UpdateLanePoints();
+        AddArbitraryLaneConnections();
     }
 
     public void SetResolution(int newResolution) 
@@ -176,12 +179,63 @@ public class BezierControl : MonoBehaviour
                     lanePoints.Add(curvePoints[j] + normalVectors[j] * (laneWidth / 2) * laneIndex);
                 }
 
+                if (polarity == -1) lanePoints.Reverse();
+
                 LaneManager.Instance.TryRegisterLane(id, laneIndex);
                 LaneManager.Instance.UpdateLaneBlob(id, laneIndex, lanePoints);
             }
         }
     }
 
+    // Arbitrarily connects all lanes 
+    public void AddArbitraryLaneConnections() 
+    {
+        List<BezierControl> leftParentBeziers = NodeManager.Instance.GetBezierControlByParentID(leftParent.id);
+        List<BezierControl> rightParentBeziers = NodeManager.Instance.GetBezierControlByParentID(rightParent.id);
+
+        leftParentBeziers.Remove(this);
+        rightParentBeziers.Remove(this);
+
+        foreach (BezierControl leftbezierConnections in leftParentBeziers)
+        {
+            int polarity = 1;
+            
+            if (leftbezierConnections.leftParent == leftParent) polarity = -1;
+                
+            for (int i = 1; i <= numLanes; i ++) 
+            {
+                for (int j = 1; j <= leftbezierConnections.numLanes; j++)
+                {
+                    LaneManager.Instance.AddLaneConnection(id, i, leftbezierConnections.id, j * polarity);
+                }
+            }    
+        }
+
+        foreach (BezierControl rightbezierConnections in leftParentBeziers)
+        {
+            int polarity = -1;
+            
+            if (rightbezierConnections.rightParent == rightParent) polarity = 1;
+                
+            for (int i = 1; i <= numLanes; i ++) 
+            {
+                for (int j = 1; j <= rightbezierConnections.numLanes; j++)
+                {
+                    LaneManager.Instance.AddLaneConnection(id, -i, rightbezierConnections.id, j * polarity);
+                }
+            }    
+        }
+
+        for (int i = 1; i <= numLanes; i ++) 
+        {
+            for (int j = 1; j <= numLanes; j ++)
+            {
+                LaneManager.Instance.AddLaneConnection(id, i, id, -j);
+                LaneManager.Instance.AddLaneConnection(id, -i, id, j);
+            }
+            
+        }
+    }
 
     // Colour for if BezierControl is visible but not selected
     public void UpdateColourUnselected() 

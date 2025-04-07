@@ -12,16 +12,21 @@ public class PlaceObject : MonoBehaviour
     private bool isDraggingBezierControl = false;
 
     private NodeManager nodeManager;
+    private VehicleManager vehicleManager;
     
     private void Awake()
     {
         nodeManager = GetComponent<NodeManager>();
+        vehicleManager = GetComponent<VehicleManager>();
     }
 
-    int counter = 0;
 
     private void Update()
     {
+        CheckVPress();
+
+        if (vehicleManager.isActive) return;
+
         // Placing down new objects and selecting already placed objects
         CheckLeftClick();
         CheckDragging();
@@ -31,7 +36,7 @@ public class PlaceObject : MonoBehaviour
 
         // Selecting objects so that nodes can be connected or deleted
         CheckMiddleClick();
-        counter += 1;
+
     }
 
 
@@ -160,6 +165,23 @@ public class PlaceObject : MonoBehaviour
             
         }
     }
+
+
+    private void CheckVPress()
+    {
+        if (Input.GetKeyDown(KeyCode.V)) 
+        {
+            if (!vehicleManager.isActive) 
+            {
+                vehicleManager.StartSpawning();
+                return;
+            }
+            Debug.Log("Test");
+            vehicleManager.StopSpawning();
+        }
+    }
+
+
 
     // Gets the topmost object at the mouse position
     private GameObject GetTopObject() 

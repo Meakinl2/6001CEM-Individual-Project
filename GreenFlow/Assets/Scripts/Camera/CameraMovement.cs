@@ -37,6 +37,8 @@ public class CameraMovement : MonoBehaviour
         {
             newCameraSize = cam.orthographicSize + zoomStep;
             cam.orthographicSize = Mathf.Clamp(newCameraSize, minCameraSize, maxCameraSize);
+
+            
         }
         else if (Input.GetAxis("Mouse ScrollWheel") < 0f )
         {
@@ -44,6 +46,7 @@ public class CameraMovement : MonoBehaviour
             cam.orthographicSize = Mathf.Clamp(newCameraSize, minCameraSize, maxCameraSize);
         }
   
+
     }
 
 }

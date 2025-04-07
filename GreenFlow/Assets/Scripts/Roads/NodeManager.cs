@@ -41,7 +41,7 @@ public class NodeManager : MonoBehaviour
     public void RegisterNode(Node node)
     {
         Debug.Log("Attempting to Register Node: " + node.id);
-        if (!nodeRegistry.ContainsKey(node.id)) {nodeRegistry.Add(node.id, node);}
+        if (!nodeRegistry.ContainsKey(node.id)) nodeRegistry.Add(node.id, node);
         Debug.Log("Successfully Registered Node: " + node.id);
     }
 
@@ -58,7 +58,7 @@ public class NodeManager : MonoBehaviour
     {
         Debug.Log("Attempting to Deregister Node: " + nodeId);
         
-        if (!nodeConnections.ContainsKey(nodeId)) {return;}
+        if (!nodeConnections.ContainsKey(nodeId)) return;
 
         // Copy required as the foreach loop edits the original hashset which causes the iteration to throw an error
         HashSet<string> connectionsHashSetCopy = new HashSet<string>(nodeConnections[nodeId]);
@@ -70,7 +70,7 @@ public class NodeManager : MonoBehaviour
             RemoveNodeConnection(node1, node2);
         }
 
-        if (nodeRegistry.ContainsKey(nodeId)) {nodeRegistry.Remove(nodeId);}
+        if (nodeRegistry.ContainsKey(nodeId)) nodeRegistry.Remove(nodeId);
 
         Debug.Log("Successfully Deregistered Node: " + nodeId);
     }
@@ -95,6 +95,23 @@ public class NodeManager : MonoBehaviour
         return bezierControlRegistry.TryGetValue(id, out BezierControl bezierControl) ? bezierControl : null;
     }
 
+    // Gets all BezierControls that have the specified parent
+    public List<BezierControl> GetBezierControlByParentID(string parentId)
+    {
+        List<string> bezierControlIds = controlBezierConnections.Where(kvp => kvp.Key.Contains(parentId))
+                                                                .Select(kvp => kvp.Value)
+                                                                .ToList();
+
+        List<BezierControl> bezierControls = new List<BezierControl>() {};
+        foreach (string id in bezierControlIds)
+        {
+            BezierControl nextBezierControl = GetBezierControlByID(id);
+            bezierControls.Add(nextBezierControl);
+        }
+        return bezierControls;
+    }
+
+
     // Consults controlBezierConnections with two NodeIds and returns ControlBezier object between them.
     public BezierControl GetBezierControlByParentIDs(string parent1Id, string parent2Id) 
     {
@@ -111,16 +128,16 @@ public class NodeManager : MonoBehaviour
         HashSet<string> dictKey = new HashSet<string> {node1.id, node2.id};
         
         // Add Nodes to nodeConnections Dictionary if they aren't already there.
-        if (!nodeConnections.ContainsKey(node1.id)) {nodeConnections.Add(node1.id, new HashSet<string>());}
-        if (!nodeConnections.ContainsKey(node2.id)) {nodeConnections.Add(node2.id, new HashSet<string>());}
+        if (!nodeConnections.ContainsKey(node1.id)) nodeConnections.Add(node1.id, new HashSet<string>());
+        if (!nodeConnections.ContainsKey(node2.id)) nodeConnections.Add(node2.id, new HashSet<string>());
         
         // If Nodes aren't already listed as connections in nodeConnections dictionary to each other than add them.
-        if (!nodeConnections[node1.id].Contains(node2.id)) {nodeConnections[node1.id].Add(node2.id);}
-        if (!nodeConnections[node2.id].Contains(node1.id)) {nodeConnections[node2.id].Add(node1.id);}
+        if (!nodeConnections[node1.id].Contains(node2.id)) nodeConnections[node1.id].Add(node2.id);
+        if (!nodeConnections[node2.id].Contains(node1.id)) nodeConnections[node2.id].Add(node1.id);
 
         // If Nodes aren't already listed as connection in the Node objects then add them.
-        if (!node1.connectedNodeIDs.Contains(node2.id)) {node1.connectedNodeIDs.Add(node2.id);}
-        if (!node2.connectedNodeIDs.Contains(node1.id)) {node2.connectedNodeIDs.Add(node1.id);}
+        if (!node1.connectedNodeIDs.Contains(node2.id)) node1.connectedNodeIDs.Add(node2.id);
+        if (!node2.connectedNodeIDs.Contains(node1.id)) node2.connectedNodeIDs.Add(node1.id);
 
         if (controlBezierConnections.ContainsKey(dictKey)) {return;}
 
@@ -129,10 +146,9 @@ public class NodeManager : MonoBehaviour
         BezierControl newBezierControl = newBezierControlObject.GetComponent<BezierControl>();
         controlBezierConnections.Add(dictKey, newBezierControl.id);
         newBezierControl.SetParentNodes(node1, node2);
-        newBezierControl.UpdateCurve();
-        newBezierControl.UpdateLanePoints();
+        
 
-        Debug.Log("Succesffuly added Connection between Node: " + node1.id + " and Node: " + node2.id);
+        Debug.Log("Successfully added Connection between Node: " + node1.id + " and Node: " + node2.id);
  
     }
 
@@ -143,11 +159,11 @@ public class NodeManager : MonoBehaviour
 
         HashSet<string> dictKey = new HashSet<string>() {node1.id, node2.id};
         
-        if (nodeConnections[node1.id].Contains(node2.id)) {nodeConnections[node1.id].Remove(node2.id);}
-        if (nodeConnections[node2.id].Contains(node1.id)) {nodeConnections[node2.id].Remove(node1.id);}
+        if (nodeConnections[node1.id].Contains(node2.id)) nodeConnections[node1.id].Remove(node2.id);
+        if (nodeConnections[node2.id].Contains(node1.id)) nodeConnections[node2.id].Remove(node1.id);
         
-        if (node1.connectedNodeIDs.Contains(node2.id)) {node1.connectedNodeIDs.Remove(node2.id);}
-        if (node2.connectedNodeIDs.Contains(node1.id)) {node2.connectedNodeIDs.Remove(node1.id);}
+        if (node1.connectedNodeIDs.Contains(node2.id)) node1.connectedNodeIDs.Remove(node2.id);
+        if (node2.connectedNodeIDs.Contains(node1.id)) node2.connectedNodeIDs.Remove(node1.id);
         
         if (!controlBezierConnections.ContainsKey(dictKey)) {return;}
         
@@ -159,6 +175,13 @@ public class NodeManager : MonoBehaviour
         Destroy(connectionBezier.gameObject);
         
         Debug.Log("Successfully removed Connection between Node: " + node1.id + " and Node: " + node2.id);
+    }
+
+
+    public BezierControl GetRandomBezierControl()
+    {
+        string randomKey = bezierControlRegistry.Keys.ElementAt(Random.Range(0, bezierControlRegistry.Count));
+        return bezierControlRegistry[randomKey];
     }
 
 }

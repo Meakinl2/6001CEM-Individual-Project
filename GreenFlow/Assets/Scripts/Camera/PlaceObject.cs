@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class PlaceObject : MonoBehaviour
 {
@@ -23,8 +24,12 @@ public class PlaceObject : MonoBehaviour
 
     private void Update()
     {
-        CheckVPress();
+        
+        // Check that the UI isn't being interated with.
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
+        // Check to see if the vehicle spawner is active or not.
+        CheckVPress();
         if (vehicleManager.isActive) return;
 
         // Placing down new objects and selecting already placed objects

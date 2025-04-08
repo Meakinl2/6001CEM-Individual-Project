@@ -20,7 +20,7 @@ public class BezierControl : MonoBehaviour
     public bool isVisible = false;
 
     private int numLanes = 1;
-    private float laneWidth = 3.5F;
+    private float laneWidth = 3.5f;
 
     
     // Unity burst isn't vector3 compatible and Native Arrays are faster than Lists.

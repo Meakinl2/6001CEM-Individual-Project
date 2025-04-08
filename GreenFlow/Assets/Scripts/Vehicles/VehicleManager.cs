@@ -15,7 +15,7 @@ public class VehicleManager : MonoBehaviour
     public static VehicleManager Instance { get; private set;}
 
     public GameObject vehiclePrefab;
-    public int numVehicles = 10;
+    public int maxVehicles = 10;
     public float customSpeed = 10f;
 
     public bool isActive = false;
@@ -26,6 +26,15 @@ public class VehicleManager : MonoBehaviour
 
     private string filePath;
     private float startTime;
+
+    private List<Color32> vehicleColours = new List<Color32>()
+    {
+        new Color32(220, 70, 60, 255), new Color32(230, 140, 20, 255), new Color32(235, 200, 40, 255),   
+        new Color32(100, 210, 40, 255), new Color32(20, 220, 120, 255), new Color32(30, 170, 230, 255),   
+        new Color32(50, 130, 230, 255), new Color32(110, 60, 200, 255), new Color32(230, 50, 130, 255),   
+        new Color32(230, 90, 160, 255), new Color32(80, 220, 220, 255), new Color32(220, 60, 220, 255),
+        new Color32(210, 80, 30, 255), new Color32(150, 230, 70, 255), new Color32(220, 110, 110, 255)   
+    };
 
 
     private void Awake()
@@ -66,7 +75,7 @@ public class VehicleManager : MonoBehaviour
     {
         if (!isActive) return;
 
-        if (spawnedVehicles.Count >= numVehicles) return;
+        if (spawnedVehicles.Count >= maxVehicles) return;
 
         timer += Time.deltaTime;
 
@@ -92,6 +101,7 @@ public class VehicleManager : MonoBehaviour
             newVehicle.currentLanePositions.Add(new Vector3(pos.x, pos.y, pos.z));
         }
         
+        newVehicle.GetComponent<Renderer>().material.color = vehicleColours[UnityEngine.Random.Range(0, vehicleColours.Count)];
 
         spawnedVehicles.Add(newVehicle);
 

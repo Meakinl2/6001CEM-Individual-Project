@@ -231,7 +231,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 50
+  orthographic size: 150
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -342,10 +342,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vehiclePrefab: {fileID: 3793662293196498059, guid: cbf2f62447235be4dacf5ee2dc367880, type: 3}
-  numVehicles: 300
+  numVehicles: 10000
   customSpeed: 30
   isActive: 0
-  spawnDelay: 0.01
+  spawnedVehicles: []
+  spawnDelay: 0.001
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,7 +15,7 @@ public class FpsCounter : MonoBehaviour
     private void Awake()
     {
         string dateTime = System.DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
-        filePath = "Assets/FPS_Logs/" + dateTime + "-fps_log_raw.txt";
+        filePath = "Assets/Logs/FPS_Logs/" + dateTime + "-fps_log_raw.txt";
     }
 
     private IEnumerator Start()

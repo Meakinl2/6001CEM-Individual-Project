@@ -179,7 +179,7 @@ public class BezierControl : MonoBehaviour
                     lanePoints.Add(curvePoints[j] + normalVectors[j] * (laneWidth / 2) * laneIndex);
                 }
 
-                if (polarity == -1) lanePoints.Reverse();
+                if (polarity == 1) lanePoints.Reverse();
 
                 LaneManager.Instance.TryRegisterLane(id, laneIndex);
                 LaneManager.Instance.UpdateLaneBlob(id, laneIndex, lanePoints);
@@ -211,7 +211,7 @@ public class BezierControl : MonoBehaviour
             }    
         }
 
-        foreach (BezierControl rightbezierConnections in leftParentBeziers)
+        foreach (BezierControl rightbezierConnections in rightParentBeziers)
         {
             int polarity = -1;
             

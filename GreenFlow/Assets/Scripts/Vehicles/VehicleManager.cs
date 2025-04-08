@@ -3,8 +3,11 @@ using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Entities;
 using Unity.Burst;
+using System;
 using System.Linq;
+using System.IO;
 using System.Collections.Generic;
+using System.Collections;
 
 public class VehicleManager : MonoBehaviour
 {
@@ -16,16 +19,47 @@ public class VehicleManager : MonoBehaviour
     public float customSpeed = 10f;
 
     public bool isActive = false;
-    private List<Vehicle> spawnedVehicles = new List<Vehicle>();
+    public List<Vehicle> spawnedVehicles = new List<Vehicle>();
     
     private float timer = 0f;
     public float spawnDelay = 1f;
+
+    private string filePath;
+    private float startTime;
 
 
     private void Awake()
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+        string dateTime = System.DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
+        filePath = "Assets/Logs/Vehicle_Logs/" + dateTime + "-vehicle_log.txt";
+    }
+
+    private IEnumerator Start() 
+    {
+        startTime = Time.time;
+        
+
+        while (true)
+        {
+            yield return new WaitForSeconds(0.1f);
+            
+            try
+            {
+                float currentTime = Time.time;     
+                float milliseconds = (currentTime - startTime) * 1000;
+                using (StreamWriter writer = new StreamWriter(filePath, true))
+                {
+                    writer.WriteLine(milliseconds + ", " + spawnedVehicles.Count());
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Error writing to file: " + e.Message);
+            }
+
+        }
     }
 
     private void Update()

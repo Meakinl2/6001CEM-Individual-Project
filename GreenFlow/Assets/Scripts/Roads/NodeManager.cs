@@ -8,7 +8,7 @@ public class NodeManager : MonoBehaviour
     // A dictionary that contains all Node objects by their GUID
     private Dictionary<string, Node> nodeRegistry;
     // A dictionary that contrains all BezierControls by GUID
-    private Dictionary<string, BezierControl> bezierControlRegistry;
+    public Dictionary<string, BezierControl> bezierControlRegistry;
 
     // A dictionary that shows all of the connections by Node id
     private Dictionary<string, HashSet<string>> nodeConnections;

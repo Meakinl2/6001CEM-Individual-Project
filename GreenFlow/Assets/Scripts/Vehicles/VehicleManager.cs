@@ -36,6 +36,7 @@ public class VehicleManager : MonoBehaviour
         new Color32(210, 80, 30, 255), new Color32(150, 230, 70, 255), new Color32(220, 110, 110, 255)   
     };
 
+    private SimulationGUI gui;
 
     private void Awake()
     {
@@ -43,6 +44,7 @@ public class VehicleManager : MonoBehaviour
         else Destroy(gameObject);
         string dateTime = System.DateTime.Now.ToString("yyyy-dd-M--HH-mm-ss");
         filePath = "Assets/Logs/Vehicle_Logs/" + dateTime + "-vehicle_log.txt";
+        gui = GetComponent<SimulationGUI>();
     }
 
     private IEnumerator Start() 
@@ -75,7 +77,22 @@ public class VehicleManager : MonoBehaviour
     {
         if (!isActive) return;
 
-        if (spawnedVehicles.Count >= maxVehicles) return;
+        
+
+        if (spawnedVehicles.Count >= maxVehicles) 
+        {
+            int overCount = spawnedVehicles.Count - maxVehicles;
+
+            for (int i = 1; i <= overCount; i++)
+            {
+                GameObject vehicleDestroy = spawnedVehicles[spawnedVehicles.Count - 1].gameObject;
+                Destroy(vehicleDestroy);
+                spawnedVehicles.RemoveAt(spawnedVehicles.Count - 1);
+            }
+
+            gui.UpdateCounter();
+            return;
+        }
 
         timer += Time.deltaTime;
 
@@ -105,6 +122,7 @@ public class VehicleManager : MonoBehaviour
 
         spawnedVehicles.Add(newVehicle);
 
+        gui.UpdateCounter();
         timer = 0f;
 
     }

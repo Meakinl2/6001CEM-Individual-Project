@@ -65,8 +65,8 @@ public class SimulationGUI : MonoBehaviour
         UpdateCounter();
     }
 
-    void UpdateCounter() 
+    public void UpdateCounter() 
     {
-        vehicleCounter.text = vehicleManager.maxVehicles.ToString();
+        vehicleCounter.text = vehicleManager.spawnedVehicles.Count + "/" + vehicleManager.maxVehicles.ToString();
     }
 }

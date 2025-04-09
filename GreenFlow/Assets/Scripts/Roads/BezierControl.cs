@@ -17,8 +17,6 @@ public class BezierControl : MonoBehaviour
     private Node leftParent;
     private Node rightParent;
 
-    public bool isVisible = false;
-
     private int numLanes = 1;
     private float laneWidth = 3.5f;
 
@@ -29,7 +27,6 @@ public class BezierControl : MonoBehaviour
     private NativeArray<float3> normalVectors;
     private List<Vector3> curvePointsCache = new List<Vector3>();
     
-    public GameObject laneObject;
     private LineRenderer lineRenderer;
 
     

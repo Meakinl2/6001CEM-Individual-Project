@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
-public class PlaceObject : MonoBehaviour
+public class ObjectInteractions : MonoBehaviour
 {
     public GameObject placeable;
     private Node selectedNode; 
@@ -49,44 +49,59 @@ public class PlaceObject : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            // Select the topmost object
             GameObject selectedObject = GetTopObject();
 
+            // Guard clause for if there is no object to select
             if (selectedObject == null) {return;}
 
+            // Check if the object is a node
             if (selectedObject.GetComponent<Node>() != null) 
             {
+                // Update Selected Node
                 UpdateSelectedNode(selectedObject.GetComponent<Node>());
                 Debug.Log($"Node Selected: {selectedNode.id}");
+                // Start Dragging the Node
                 isDraggingNode = true;
                 return;
             }
 
+            // Check if the object is a BezierCOntrol
             if (selectedObject.GetComponent<BezierControl>() != null)
             {
+                // Select the Bezier Control
                 selectedBezierControl = selectedObject.GetComponent<BezierControl>();
                 Debug.Log($"BezierControl Selected: {selectedBezierControl.id}");
+                // Start Dragging the Bezier Control
                 isDraggingBezierControl = true;
                 return;
             }
 
+            // If neither of the previous checks were true then instantiate a new
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             GameObject newObject = Instantiate(placeable , mousePosition, Quaternion.identity);
             Node newNode = newObject.GetComponent<Node>();
             
+            // Assuming there is one connect the new node to the currently selected Node
             if (selectedNode != null) {nodeManager.AddNodeConnection(selectedNode, newNode);}
                 
             Debug.Log($"Instantiated Object with ID: {newNode.id}");
+            // Make the new node the currently selected one.
             UpdateSelectedNode(newNode);
         }
     }
 
     private void CheckDragging() 
     {
+        // Check something actually is being dragged
         if (!isDraggingNode && !isDraggingBezierControl) return;
+
+        // If button has been released then stop dragging 
         if (Input.GetMouseButtonUp(0) && isDraggingNode) 
         {
             isDraggingNode = false; 
 
+            // Then update the rest of the connected bezier control
             foreach (string id in selectedNode.connectedNodeIDs) 
             {
                 BezierControl bezierControl = nodeManager.GetBezierControlByParentIDs(selectedNode.id, id);
@@ -95,6 +110,7 @@ public class PlaceObject : MonoBehaviour
 
             return;
         }
+        // Same check but for Bezier Control
         else if (Input.GetMouseButtonUp(0) && isDraggingBezierControl)
         {
             isDraggingBezierControl = false; 
@@ -176,6 +192,7 @@ public class PlaceObject : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.V)) 
         {
+            if (nodeManager.bezierControlRegistry.Count < 1) return;
             if (!vehicleManager.isActive) 
             {
                 vehicleManager.StartSpawning();
